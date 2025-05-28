@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command\File;
 
+use App\Model\File\Editor\InteractiveFileEditor;
+use App\Model\File\FileHandler\DummyFileHandler;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -50,22 +52,32 @@ class FileEditCommand extends Command
             "File Size: " . $this->formatBytes(filesize($filePath))
         ]);
 
-        // Handle different formats
-        return match (strtolower($format)) {
-            'csv' => $this->handleCsvFile($filePath, $searchColumn, $io),
-            default => $this->formatNotImplemented($format, $io),
-        };
+//        $outcome = match (strtolower($format)) {
+//            'csv' => $this->handleCsvFile($filePath, $searchColumn, $io),
+//            default => $this->formatNotImplemented($format, $io),
+//        };
+
+        $dummyFileHandler = new DummyFileHandler();
+        $interactiveEditor = new InteractiveFileEditor($dummyFileHandler, $io);
+
+        $outcome = $interactiveEditor->start();
+
+        if (!$outcome) {
+            return Command::FAILURE;
+        }
+
+        return Command::SUCCESS;
     }
 
-    private function formatNotImplemented(string $format, $io): int
+    private function formatNotImplemented(string $format, $io): false
     {
         $format = strtoupper($format);
         $io->warning("{$format} format not implemented yet");
-        return Command::FAILURE;
+        return false;
     }
 
     // TODO: Move it into class later
-    private function handleCsvFile(string $filePath, SymfonyStyle $io): int
+    private function handleCsvFile(string $filePath, SymfonyStyle $io): bool
     {
         // Open file using SplFileObject for memory efficiency
         $file = new \SplFileObject($filePath, 'r');
@@ -77,7 +89,7 @@ class FileEditCommand extends Command
 
         if (!$headers || empty($headers)) {
             $io->error('Unable to read headers from CSV file');
-            return Command::FAILURE;
+            return false;
         }
 
         $table = $io->createTable();
@@ -94,7 +106,7 @@ class FileEditCommand extends Command
         $table->render();
 
 
-        return Command::SUCCESS;
+        return true;
     }
 
     private function formatBytes(int $size): string
