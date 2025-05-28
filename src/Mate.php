@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Command\File\FileEditCommand;
+use App\Command\Magento\GetAllEncryptedConfigValues;
 use App\Command\Magento\ShowCronScheduleCommand;
 use Exception;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Console\Command\Command;
 
@@ -22,6 +23,8 @@ class Mate extends Application
     /** @var class-string[] */
     private array $commands = [
         ShowCronScheduleCommand::class,
+        GetAllEncryptedConfigValues::class,
+        FileEditCommand::class,
     ];
 
     private ContainerInterface $container;

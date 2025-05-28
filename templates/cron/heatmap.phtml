@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Granular Cron Heatmap - <?= $year ?></title>
+    <style>
+        <?php include __DIR__ . '/styles/heatmap.css'; ?>
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Granular Cron Execution Heatmap - <?= $year ?></h1>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="granularity">Granularity:</label>
+            <select id="granularity">
+                <option value="1">1 minute</option>
+                <option value="5">5 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="viewType">View:</label>
+            <select id="viewType">
+                <option value="day" selected>Single Day</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="selectedDate">Date:</label>
+            <input type="date" id="selectedDate" value="<?= $year ?>-01-01">
+        </div>
+
+        <div class="control-group">
+            <label for="groupFilter">Group:</label>
+            <select id="groupFilter">
+                <option value="">All Groups</option>
+                <?php foreach ($groups as $group): ?>
+                    <option value="<?= htmlspecialchars($group) ?>"><?= htmlspecialchars($group) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <button onclick="updateHeatmap()">Update View</button>
+        <button onclick="resetView()">Reset</button>
+        <button onclick="exportView()">Export</button>
+    </div>
+
+    <div class="heatmap-wrapper">
+        <div class="heatmap-container" id="heatmapContainer">
+            <!-- Heatmap will be rendered here by JavaScript -->
+        </div>
+    </div>
+
+    <div class="legend">
+        <span>Execution Intensity:</span>
+        <div class="legend-items">
+            <?php for ($i = 0; $i <= 5; $i++): ?>
+                <?php
+                $intensity = $i / 5;
+                $lightness = 95 - (int)($intensity * 80);
+                $style = "background-color: hsl(200, 80%, {$lightness}%);";
+                ?>
+                <div class="legend-item" style="<?= $style ?>"></div>
+            <?php endfor; ?>
+        </div>
+        <span>Low → High</span>
+    </div>
+
+    <div class="stats-panel" id="statsPanel">
+        <h3>Current View Statistics</h3>
+        <div class="stats-grid" id="statsGrid">
+            <!-- Statistics will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+</div>
+
+<script>
+    <?php include __DIR__ . '/js/heatmap.js'; ?>
+
+    const heatmapConfig = {
+        matrix: <?= json_encode($matrix) ?>,
+        groupMatrix: <?= json_encode($groupMatrix) ?>,
+        maxValue: <?= $maxValue ?>,
+        year: <?= $year ?>,
+        groups: <?= json_encode($groups) ?>
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeHeatmap();
+    });
+</script>
+</body>
+</html>
